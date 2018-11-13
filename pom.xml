@@ -10,11 +10,11 @@
     <artifactId>dcs-python-parent</artifactId>
     <version>2.0.0</version>
   </parent>
-  <description>CHIRPS Rainfall Estimates (RFE) - Aggregations</description>
-  <version>0.1-SNAPSHOT</version>
+  <description>CHIRPS Rainfall Estimates Aggregations</description>
+  <version>1.0-SNAPSHOT</version>
   <properties>
-    <summary>CHIRPS Rainfall Estimates (RFE) - Aggregations</summary>
-    <description>CHIRPS Rainfall Estimates (RFE) - Aggregations</description>
+    <summary>CHIRPS Rainfall Estimates Aggregations</summary>
+    <description>CHIRPS Rainfall Estimates Aggregations</description>
     <community>ec-better</community>
     <yumRepo>ec-better</yumRepo>
   </properties>
@@ -64,10 +64,10 @@
     <profile>
       <id>package-app</id>
       <activation>
-        <property>
-          <name>env</name>
-          <value>ci</value>
-        </property>
+         <property>
+           <name>env</name>
+           <value>ci</value>
+         </property>
       </activation>
       <build>
         <plugins>
@@ -94,8 +94,7 @@
                 </configuration>
               </execution>
             </executions>
-          </plugin>
-
+	  </plugin>
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>rpm-maven-plugin</artifactId>
@@ -112,7 +111,7 @@
                     <require>miniconda</require>
                     <require>OTB</require>
                     <require>java-1.8.0-openjdk-devel</require>
-                    <require>snap6</require>
+                    <require>snap6</require> 
                   </requires>
                   <postinstallScriptlet combine.self="override">
                     <script>conda update conda -y &amp;&amp; conda install -y --file /application/dependencies/python/packages.list &amp;&amp; cp /application/notebook/etc/snappy.ini /opt/anaconda/lib/python2.7/site-packages/snappy/snappy.ini</script>

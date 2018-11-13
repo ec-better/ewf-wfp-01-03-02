@@ -21,9 +21,6 @@ SUCCESS = 0
 ERR_NB_RUNTIME=10
 
 references = []
-identifiers = []
-enclosures = []
-local_files = []  
 
 # add a trap to exit gracefully
 def clean_exit(exit_code):
@@ -38,7 +35,6 @@ def clean_exit(exit_code):
     ciop.log(log_level, msg[exit_code])  
 
 def parametrize():
-
     global nb
         
     for index, cell in enumerate(nb['cells']):
@@ -96,51 +92,7 @@ def parametrize():
             except SyntaxError:
                 continue   
 
-def reproducibility():
-    
-    ciop.log('INFO', 'Create stage-in notebook for reproducibility')
-    
-    global tmp_dir
-        
-    nb_stagein = nbf.v4.new_notebook()
-    code = []
-      
-    code.append(nbf.v4.new_code_cell("""\
-import os
-import sys
-sys.path.append('/opt/anaconda/bin/')
-import cioppy
-ciop = cioppy.Cioppy()"""))
-    
-    code.append(nbf.v4.new_code_cell('tmp_dir = "' + tmp_dir + '"'))
-    code.append(nbf.v4.new_code_cell('os.makedirs(tmp_dir)'))
-    
-    for reference in references:
-      code.append(nbf.v4.new_code_cell('reference = "' + reference + '"'))
-      code.append(nbf.v4.new_code_cell("search = ciop.search(end_point = reference, params = [], output_fields='enclosure,identifier', model='GeoTime')"))
-      code.append(nbf.v4.new_code_cell("retrieved = ciop.copy(search[0]['enclosure'], tmp_dir)"))
-      code.append(nbf.v4.new_code_cell("assert(retrieved)"))
-        
-    nb_stagein['cells'] = code
-    fname = 'stage-in.ipynb'
-    with open(fname, 'w') as f:
-      nbf.write(nb_stagein, f)  
-        
-def stage_in():
- 
-    for reference in references:
-      ciop.log('INFO', 'The input reference is: ' + reference)    
-      
-      search = ciop.search(end_point = reference, params = [], output_fields='enclosure,identifier', model='GeoTime')
-      assert(search), sys.exit(ERR_RESOLUTION)
-  
-      ciop.log('INFO', 'Retrieve %s from %s' % (search[0]['identifier'], search[0]['enclosure']))
-      retrieved = ciop.copy(search[0]['enclosure'], tmp_dir)
-      assert(retrieved), sys.exit(ERR_STAGEIN)
 
-      identifiers.append(search[0]['identifier'])
-      enclosures.append(search[0]['enclosure'])
-      local_files.append(retrieved) 
 
 def execute(nb_source, nb_target, kernel = 'python2'):
     
@@ -155,7 +107,6 @@ def execute(nb_source, nb_target, kernel = 'python2'):
     # execute the notebook
     ep = ExecutePreprocessor(timeout=None, kernel_name=kernel)
 
-    
     try:
       out = ep.preprocess(nb, {'metadata': {'path': './'}})
     except CellExecutionError:
@@ -172,67 +123,45 @@ def execute(nb_source, nb_target, kernel = 'python2'):
       ciop.log('INFO', 'Write notebook')  
       with io.open(nb_target, 'wb') as file:
         file.write(nbf.writes(nb))
-        file.close()   
+        file.close() 
 
 def publish():
    
     # publish
     ciop.log('INFO', 'Publishing ') 
-    ciop.publish(runtime, metalink=True, recursive=True) 
+    ciop.publish(runtime, metalink=True, recursive=True)
 
 def clean_up():
            
     # clean-up 
     shutil.rmtree(runtime)
-    shutil.rmtree(os.path.split(tmp_dir)[0])
-    
+
 def main():
 
+    # create the folder for the data stage-in
     global runtime
     runtime = os.path.join(ciop.tmp_dir, str(uuid.uuid4()))    
 
     ciop.log('DEBUG', 'The runtime folder is %s' % (runtime))
     os.makedirs(runtime)
     os.chdir(runtime) 
-    
-    # create the folder for the data stage-in
-    global tmp_dir
-    tmp_dir = os.path.join('/tmp', 'workspace-' + str(uuid.uuid4()), 'data') 
-    os.makedirs(tmp_dir)
-  
+
     # Loops over all the inputs
     for reference in sys.stdin:
       references.append(reference.rstrip())
-    
-    # stage-in the data
-    stage_in()
-    
-    # create the reproducibility notebook for data stage-in
-    reproducibility()     
+
     
     # execute the notebook
     nb_source = os.path.join('/application', 'notebook', 'libexec', 'input.ipynb')
     nb_target = os.path.join(runtime, 'result.ipynb')  
-
-    try:
-      execute(nb_source, nb_target, 'python2') 
-    except Exception, e:
-      out = None
-      ciop.log('ERROR', 'Error executing the notebook "%s".' % nb_source)
-
-      with io.open(nb_target, 'wb') as file:
-        file.write(nbf.writes(nb))
-        file.close()
-
-      ciop.publish(nb_target, metalink=True)
-      raise 
-    finally:
-      # publish the results
-      publish()
+    execute(nb_source, nb_target, 'python2')  
     
-      # clean-up
-      clean_up()
-     
+    # publish
+    publish()   
+   
+    # clean-up 
+    clean_up()
+
 try:
   main()
 except SystemExit as e:
@@ -241,4 +170,5 @@ except SystemExit as e:
   raise
 else:
   atexit.register(clean_exit, 0)
+
 

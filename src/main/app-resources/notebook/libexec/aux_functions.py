@@ -26,8 +26,15 @@ def mask_matrix(input_mat, threshold_value, greater_than, no_data_value=None):
     return result    
 
 def crop_image(input_image, polygon_wkt, output_path):
+    dataset = None
+    crop_directory = os.path.dirname(output_path)
+    if crop_directory is not '' and not os.path.exists(crop_directory):
+        os.makedirs(crop_directory)
     if '.gz' in input_image:
-        dataset = gdal.Open('/vsigzip//vsicurl/%s' % input_image)
+        try:
+            dataset = gdal.Open('/vsigzip//vsicurl/%s' % input_image)
+        except Exception as e:
+            print(e)
     else:
         dataset = gdal.Open(input_image)
     polygon_ogr = ogr.CreateGeometryFromWkt(polygon_wkt)

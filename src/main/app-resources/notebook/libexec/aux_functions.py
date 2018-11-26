@@ -30,7 +30,7 @@ def crop_image(input_image, polygon_wkt, output_path):
     crop_directory = os.path.dirname(output_path)
     if crop_directory is not '' and not os.path.exists(crop_directory):
         os.makedirs(crop_directory)
-    if '.gz' in input_image:
+    if input_image.startswith('ftp://') or input_image.startswith('http'):
         try:
             dataset = gdal.Open('/vsigzip//vsicurl/%s' % input_image)
         except Exception as e:
@@ -42,7 +42,8 @@ def crop_image(input_image, polygon_wkt, output_path):
     bounds = [envelope[0], envelope[2], envelope[1], envelope[3]]
     gdal.Warp(output_path, dataset, format="GTiff", outputBoundsSRS='EPSG:4326', outputBounds=bounds)
     
-def write_output_image(filepath, output_matrix, image_format, mask=None):
+def write_output_image(filepath, output_matrix, image_format, output_projection=None, output_geotransform=None, mask=None):
+    
     driver = gdal.GetDriverByName(image_format)
     out_rows = np.size(output_matrix, 0)
     out_columns = np.size(output_matrix, 1)
@@ -52,7 +53,14 @@ def write_output_image(filepath, output_matrix, image_format, mask=None):
         mask_band.WriteArray(mask)
     else:
         output = driver.Create(filepath, out_rows, out_columns, 1, gdal.GDT_Float32)
+        
+    if output_projection is not None:
+        output.SetProjection(output_projection)
+    if output_geotransform is not None:
+        output.SetGeoTransform(output_geotransform)
     
     raster_band = output.GetRasterBand(1)
     raster_band.WriteArray(output_matrix)
+    
+    output.FlushCache()
     

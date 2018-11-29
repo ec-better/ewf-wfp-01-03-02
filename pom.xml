@@ -10,11 +10,11 @@
     <artifactId>dcs-python-parent</artifactId>
     <version>2.0.0</version>
   </parent>
-  <description>CHIRPS Rainfall Estimates (RFE) - Aggregations</description>
-  <version>0.1-SNAPSHOT</version>
+  <description>CHIRPS Rainfall Estimates Aggregations</description>
+  <version>1.0</version>
   <properties>
-    <summary>CHIRPS Rainfall Estimates (RFE) - Aggregations</summary>
-    <description>CHIRPS Rainfall Estimates (RFE) - Aggregations</description>
+    <summary>CHIRPS Rainfall Estimates Aggregations</summary>
+    <description>CHIRPS Rainfall Estimates Aggregations</description>
     <community>ec-better</community>
     <yumRepo>ec-better</yumRepo>
   </properties>
@@ -60,7 +60,6 @@
         </plugins>
       </build>
     </profile>
-
     <profile>
       <id>package-app</id>
       <activation>
@@ -71,7 +70,6 @@
       </activation>
       <build>
         <plugins>
-
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
@@ -95,7 +93,6 @@
               </execution>
             </executions>
           </plugin>
-
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>rpm-maven-plugin</artifactId>

@@ -4,6 +4,7 @@ __pycache__
 .cache
 *.tif
 *.gz
+*.properties
 
 runc
 .ipynb_checkpoints

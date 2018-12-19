@@ -59,20 +59,24 @@ class NodeATestCase(unittest.TestCase):
         self.assertGreaterEqual(os.path.getsize(cropped_image_path), 0)
         os.remove('output.tif')
     
-    def test_crop_image_remote_gzip(self):
-        polygon = 'POLYGON((-30 -10, 20 -10, 20 40, -30 40, -30 -10))'
-        image_url = 'ftp://ftp.chg.ucsb.edu/pub/org/chg/products/CHIRPS-2.0/global_daily/tifs/p05/2017/chirps-v2.0.2017.08.10.tif.gz'
-        cropped_image_path = "/workspace/wfp-01-03-02/src/test/output_from_gzip.tif"
-        crop_image(image_url, polygon, cropped_image_path)
-        self.assertGreaterEqual(os.path.getsize(cropped_image_path), 0)
-        os.remove('output_from_gzip.tif')
+    #def test_crop_image_remote_gzip(self):
+     #   polygon = 'POLYGON((-30 -10, 20 -10, 20 40, -30 40, -30 -10))'
+      #  image_url = 'ftp://ftp.chg.ucsb.edu/pub/org/chg/products/CHIRPS-2.0/global_daily/tifs/p05/2017/chirps-v2.0.2017.02.01.tif.gz'
+       # cropped_image_path = "/workspace/wfp-01-03-02/src/test/output_from_gzip.tif"
+        #crop_image(image_url, polygon, cropped_image_path)
+       # self.assertGreaterEqual(os.path.getsize(cropped_image_path), 0)
+        #os.remove('output_from_gzip.tif')
         
     def test_write_image(self):
         matrix_rand = np.random.rand(30,30)
         mask_rand = np.random.randint(2, size=(30,30))
         filepath = "/workspace/wfp-01-03-02/src/test/output_test.tif"
-        write_output_image(filepath, matrix_rand, "GTiff", mask=mask_rand)
+        write_output_image(filepath, matrix_rand, "GTiff", mask=mask_rand, no_data_value=-999.0)
         self.assertGreaterEqual(os.path.getsize(filepath), 0)
+        output_dataset = gdal.Open(filepath)
+        output_matrix = output_dataset.GetRasterBand(1).ReadAsArray()
+        self.assertTrue((output_matrix[mask_rand > 0] == -999.0).all())
+        output_dataset = None
         os.remove('output_test.tif')
         
     def test_compile(self):

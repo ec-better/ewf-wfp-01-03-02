@@ -42,8 +42,7 @@ def crop_image(input_image, polygon_wkt, output_path):
     bounds = [envelope[0], envelope[2], envelope[1], envelope[3]]
     gdal.Warp(output_path, dataset, format="GTiff", outputBoundsSRS='EPSG:4326', outputBounds=bounds)
     
-def write_output_image(filepath, output_matrix, image_format, output_projection=None, output_geotransform=None, mask=None):
-    
+def write_output_image(filepath, output_matrix, image_format, output_projection=None, output_geotransform=None, mask=None, no_data_value=None):
     driver = gdal.GetDriverByName(image_format)
     out_rows = np.size(output_matrix, 0)
     out_columns = np.size(output_matrix, 1)
@@ -51,6 +50,8 @@ def write_output_image(filepath, output_matrix, image_format, output_projection=
         output = driver.Create(filepath, out_rows, out_columns, 2, gdal.GDT_Float32)
         mask_band = output.GetRasterBand(2)
         mask_band.WriteArray(mask)
+        if no_data_value is not None:
+            output_matrix[mask > 0] = no_data_value
     else:
         output = driver.Create(filepath, out_rows, out_columns, 1, gdal.GDT_Float32)
         
@@ -60,7 +61,18 @@ def write_output_image(filepath, output_matrix, image_format, output_projection=
         output.SetGeoTransform(output_geotransform)
     
     raster_band = output.GetRasterBand(1)
+    if no_data_value is not None:
+        raster_band.SetNoDataValue(no_data_value)
     raster_band.WriteArray(output_matrix)
     
     output.FlushCache()
+    
+def get_matrix_list(image_list):
+    mat_list = []
+    for img in image_list:
+        dataset = gdal.Open(img)
+        product_array = dataset.GetRasterBand(1).ReadAsArray()
+        mat_list.append(product_array)
+        dataset = None
+    return mat_list
     

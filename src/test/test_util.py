@@ -71,7 +71,7 @@ class NodeATestCase(unittest.TestCase):
         matrix_rand = np.random.rand(30,30)
         mask_rand = np.random.randint(2, size=(30,30))
         filepath = "/workspace/wfp-01-03-02/src/test/output_test.tif"
-        write_output_image(filepath, matrix_rand, "GTiff", mask=mask_rand, no_data_value=-999.0)
+        write_output_image(filepath, matrix_rand, "GTiff", 1, mask=mask_rand, no_data_value=-999.0)
         self.assertGreaterEqual(os.path.getsize(filepath), 0)
         output_dataset = gdal.Open(filepath)
         output_matrix = output_dataset.GetRasterBand(1).ReadAsArray()

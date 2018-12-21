@@ -37,10 +37,13 @@ def crop_image(input_image, polygon_wkt, output_path):
             print(e)
     else:
         dataset = gdal.Open(input_image)
+    no_data_value = dataset.GetRasterBand(1).GetNoDataValue()
+    if no_data_value is None:
+        no_data_value = dataset.GetRasterBand(1).ComputeRasterMinMax()[0]
     polygon_ogr = ogr.CreateGeometryFromWkt(polygon_wkt)
     envelope = polygon_ogr.GetEnvelope()
     bounds = [envelope[0], envelope[2], envelope[1], envelope[3]]
-    gdal.Warp(output_path, dataset, format="GTiff", outputBoundsSRS='EPSG:4326', outputBounds=bounds)
+    gdal.Warp(output_path, dataset, format="GTiff", dstNodata=no_data_value, outputBoundsSRS='EPSG:4326', outputBounds=bounds)
     
 def write_output_image(filepath, output_matrix, image_format, number_of_images, output_projection=None, output_geotransform=None, mask=None, no_data_value=None):
     driver = gdal.GetDriverByName(image_format)

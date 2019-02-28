@@ -16,11 +16,11 @@ def matrix_sum(mat1, mat2, no_data_value=None):
 
 def mask_matrix(input_mat, threshold_value, greater_than, no_data_value=None):
     if no_data_value is not None:
-        input_mat[(input_mat == no_data_value)] = 0
+        input_mat[(input_mat == no_data_value)] = -9999.0
     if greater_than:
         result = np.where(input_mat > threshold_value, 1, 0)
     else: 
-        result = np.where((input_mat < threshold_value) & (input_mat > 0), 1, 0)
+        result = np.where((input_mat < threshold_value) & (input_mat >= 0), 1, 0)
 
     
     return result    
@@ -30,11 +30,8 @@ def crop_image(input_image, polygon_wkt, output_path):
     crop_directory = os.path.dirname(output_path)
     if crop_directory is not '' and not os.path.exists(crop_directory):
         os.makedirs(crop_directory)
-    if input_image.startswith('ftp://') or input_image.startswith('http'):
-        try:
-            dataset = gdal.Open('/vsigzip//vsicurl/%s' % input_image)
-        except Exception as e:
-            print(e)
+    if input_image.startswith('ftp://') or input_image.startswith('http'): 
+        dataset = gdal.Open('/vsigzip//vsicurl/%s' % input_image)
     else:
         dataset = gdal.Open(input_image)
     no_data_value = dataset.GetRasterBand(1).GetNoDataValue()

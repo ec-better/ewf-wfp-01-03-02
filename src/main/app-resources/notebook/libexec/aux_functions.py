@@ -51,7 +51,7 @@ def write_output_image(filepath, output_matrix, image_format, number_of_images, 
         mask_band = output.GetRasterBand(2)
         mask_band.WriteArray(mask)
         if no_data_value is not None:
-            output_matrix[mask == number_of_images] = no_data_value
+            output_matrix[mask >= number_of_images] = no_data_value
     else:
         output = driver.Create(filepath, out_columns, out_rows, 1, gdal.GDT_Float32)
         

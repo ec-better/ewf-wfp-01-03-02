@@ -30,8 +30,10 @@ def crop_image(input_image, polygon_wkt, output_path):
     crop_directory = os.path.dirname(output_path)
     if crop_directory is not '' and not os.path.exists(crop_directory):
         os.makedirs(crop_directory)
-    if input_image.startswith('ftp://') or input_image.startswith('http'): 
+    if input_image.startswith('ftp://') or input_image.startswith('http'):
         dataset = gdal.Open('/vsigzip//vsicurl/%s' % input_image)
+    elif '.gz' in input_image:
+        dataset = gdal.Open('/vsigzip/%s' % input_image)
     else:
         dataset = gdal.Open(input_image)
     no_data_value = dataset.GetRasterBand(1).GetNoDataValue()

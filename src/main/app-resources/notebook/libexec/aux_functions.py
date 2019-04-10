@@ -40,22 +40,23 @@ def crop_image(input_image, polygon_wkt, output_path):
     if no_data_value is None:
         no_data_value = dataset.GetRasterBand(1).ComputeRasterMinMax()[0]
     polygon_ogr = ogr.CreateGeometryFromWkt(polygon_wkt)
+    geo_t = dataset.GetGeoTransform()
     envelope = polygon_ogr.GetEnvelope()
     bounds = [envelope[0], envelope[2], envelope[1], envelope[3]]
-    gdal.Warp(output_path, dataset, format="GTiff", dstNodata=no_data_value, outputBoundsSRS='EPSG:4326', outputBounds=bounds)
+    gdal.Warp(output_path, dataset, format="GTiff", outputBoundsSRS='EPSG:4326', outputBounds=bounds, srcNodata=no_data_value, dstNodata=no_data_value, xRes=geo_t[1], yRes=-geo_t[5], targetAlignedPixels=True)
     
-def write_output_image(filepath, output_matrix, image_format, number_of_images, output_projection=None, output_geotransform=None, mask=None, no_data_value=None):
+def write_output_image(filepath, output_matrix, image_format, number_of_images, data_format, output_projection=None, output_geotransform=None, mask=None, no_data_value=None):
     driver = gdal.GetDriverByName(image_format)
     out_rows = np.size(output_matrix, 0)
     out_columns = np.size(output_matrix, 1)
     if mask is not None:
-        output = driver.Create(filepath, out_columns, out_rows, 2, gdal.GDT_Float32)
+        output = driver.Create(filepath, out_columns, out_rows, 2, data_format)
         mask_band = output.GetRasterBand(2)
         mask_band.WriteArray(mask)
         if no_data_value is not None:
             output_matrix[mask >= number_of_images] = no_data_value
     else:
-        output = driver.Create(filepath, out_columns, out_rows, 1, gdal.GDT_Float32)
+        output = driver.Create(filepath, out_columns, out_rows, 1, data_format)
         
     if output_projection is not None:
         output.SetProjection(output_projection)
@@ -66,7 +67,7 @@ def write_output_image(filepath, output_matrix, image_format, number_of_images, 
     if no_data_value is not None:
         raster_band.SetNoDataValue(no_data_value)
     raster_band.WriteArray(output_matrix)
-    
+    gdal.Warp(filepath, output, format="GTiff", outputBoundsSRS='EPSG:4326', xRes=output_geotransform[1], yRes=-output_geotransform[5], targetAlignedPixels=True)
     output.FlushCache()
     
 def get_matrix_list(image_list):

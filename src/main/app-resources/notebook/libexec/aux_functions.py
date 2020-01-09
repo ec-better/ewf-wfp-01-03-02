@@ -15,6 +15,7 @@ def matrix_sum(mat1, mat2, no_data_value=None):
     return mat1 + mat2
 
 def mask_matrix(input_mat, threshold_value, greater_than, no_data_value=None):
+    
     if no_data_value is not None:
         input_mat[(input_mat == no_data_value)] = -9999.0
     if greater_than:
@@ -24,51 +25,75 @@ def mask_matrix(input_mat, threshold_value, greater_than, no_data_value=None):
 
     
     return result    
-
-def crop_image(input_image, polygon_wkt, output_path):
+    
+def crop_image(input_image, polygon_wkt, output_path, product_type=None):
+    
     dataset = None
     crop_directory = os.path.dirname(output_path)
+    
     if crop_directory is not '' and not os.path.exists(crop_directory):
         os.makedirs(crop_directory)
     if input_image.startswith('ftp://') or input_image.startswith('http'):
-        dataset = gdal.Open('/vsigzip//vsicurl/%s' % input_image)
+        try:
+            dataset = gdal.Open('/vsigzip//vsicurl/%s' % input_image)
+        except Exception as e:
+            print(e)
+    elif '.nc' in input_image:
+        dataset = gdal.Open('NETCDF:' + input_image + ':' + product_type)
+        
     elif '.gz' in input_image:
         dataset = gdal.Open('/vsigzip/%s' % input_image)
-    else:
-        dataset = gdal.Open(input_image)
+        
     no_data_value = dataset.GetRasterBand(1).GetNoDataValue()
-    if no_data_value is None:
-        no_data_value = dataset.GetRasterBand(1).ComputeRasterMinMax()[0]
-    polygon_ogr = ogr.CreateGeometryFromWkt(polygon_wkt)
+
+    
     geo_t = dataset.GetGeoTransform()
+    polygon_ogr = ogr.CreateGeometryFromWkt(polygon_wkt)
     envelope = polygon_ogr.GetEnvelope()
     bounds = [envelope[0], envelope[2], envelope[1], envelope[3]]
-    gdal.Warp(output_path, dataset, format="GTiff", outputBoundsSRS='EPSG:4326', outputBounds=bounds, srcNodata=no_data_value, dstNodata=no_data_value, xRes=geo_t[1], yRes=-geo_t[5], targetAlignedPixels=True)
     
+    gdal.Warp(output_path, dataset, format="GTiff", outputBoundsSRS='EPSG:4326', outputBounds=bounds, srcNodata=no_data_value, dstNodata=no_data_value)
+    
+
+    
+
 def write_output_image(filepath, output_matrix, image_format, number_of_images, data_format, output_projection=None, output_geotransform=None, mask=None, no_data_value=None):
+    
     driver = gdal.GetDriverByName(image_format)
+    
     out_rows = np.size(output_matrix, 0)
     out_columns = np.size(output_matrix, 1)
+    
+    output = driver.Create(filepath, out_columns, out_rows, 1, data_format)
+    
+    
     if mask is not None:
-        output = driver.Create(filepath, out_columns, out_rows, 2, data_format)
-        mask_band = output.GetRasterBand(2)
-        mask_band.WriteArray(mask)
+            
         if no_data_value is not None:
+            
+            output_matrix[mask > 0] = no_data_value
             output_matrix[mask >= number_of_images] = no_data_value
-    else:
-        output = driver.Create(filepath, out_columns, out_rows, 1, data_format)
-        
+            
     if output_projection is not None:
         output.SetProjection(output_projection)
     if output_geotransform is not None:
         output.SetGeoTransform(output_geotransform)
     
     raster_band = output.GetRasterBand(1)
+    
     if no_data_value is not None:
         raster_band.SetNoDataValue(no_data_value)
+        
     raster_band.WriteArray(output_matrix)
-    gdal.Warp(filepath, output, format="GTiff", outputBoundsSRS='EPSG:4326', xRes=output_geotransform[1], yRes=-output_geotransform[5], targetAlignedPixels=True)
+    
+    gdal.Warp(filepath, output, format="GTiff", outputBoundsSRS='EPSG:4326')
+    
     output.FlushCache()
+
+
+    
+    
+
     
 def get_matrix_list(image_list):
     mat_list = []

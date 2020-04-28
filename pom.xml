@@ -11,7 +11,7 @@
     <version>3.0.1-docker</version>
   </parent>
   <description>CHIRPS Rainfall Estimates Aggregations</description>
-  <version>3.2</version>
+  <version>3.3</version>
   <properties>
     <summary>CHIRPS Rainfall Estimates Aggregations</summary>
     <description>CHIRPS Rainfall Estimates Aggregations</description>

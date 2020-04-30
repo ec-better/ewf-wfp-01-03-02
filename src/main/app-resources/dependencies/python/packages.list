@@ -16,7 +16,7 @@ ca-certificates=2020.4.5.1=hecc5488_0
 cairo=1.16.0=hcf35c78_1003
 certifi=2019.11.28=py27h8c360ce_1
 cffi=1.14.0=py27hd463f26_0
-cfitsio=3.470=h00dd3da_3
+cfitsio=3.470=h3eac812_5
 chardet=3.0.4=py27h8c360ce_1006
 cioppy=0.3.7=py27hf8027dd_0
 click=7.1.2=pyh9f0ad1d_0

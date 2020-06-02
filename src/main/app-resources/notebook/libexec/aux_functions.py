@@ -24,8 +24,8 @@ def mask_matrix(input_mat, threshold_value, greater_than, no_data_value=None):
         result = np.where((input_mat < threshold_value) & (input_mat >= 0), 1, 0)
 
     
-    return result    
-    
+    return result
+
 
 def crop_image(input_image, polygon_wkt, output_path, product_type=None):
     
@@ -42,11 +42,11 @@ def crop_image(input_image, polygon_wkt, output_path, product_type=None):
     polygon_ogr = ogr.CreateGeometryFromWkt(polygon_wkt)
     envelope = polygon_ogr.GetEnvelope()
     bounds = [envelope[0], envelope[3], envelope[1], envelope[2]]         
-
+   
     gdal.Translate(output_path, dataset, projWin=bounds, projWinSRS='EPSG:4326')
 
     dataset = None
-
+    
 
 def write_output_image(filepath, output_matrix, image_format, number_of_images, data_format, output_projection=None, output_geotransform=None, mask=None, no_data_value=None):
     

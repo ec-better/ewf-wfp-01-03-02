@@ -27,7 +27,7 @@ def mask_matrix(input_mat, threshold_value, greater_than, no_data_value=None):
     return result
 
 
-def crop_image(input_image, polygon_wkt, output_path, product_type=None):
+def crop_image(input_image, polygon_wkt, output_path, product_type=None, do_crop = True):
     
     dataset = None
         
@@ -39,12 +39,15 @@ def crop_image(input_image, polygon_wkt, output_path, product_type=None):
     elif '.nc' in input_image:
         dataset = gdal.Open('NETCDF:' + input_image + ':' + product_type)
 
-    polygon_ogr = ogr.CreateGeometryFromWkt(polygon_wkt)
-    envelope = polygon_ogr.GetEnvelope()
-    bounds = [envelope[0], envelope[3], envelope[1], envelope[2]]         
+    if do_crop:
+        polygon_ogr = ogr.CreateGeometryFromWkt(polygon_wkt)
+        envelope = polygon_ogr.GetEnvelope()
+        bounds = [envelope[0], envelope[3], envelope[1], envelope[2]]         
    
-    gdal.Translate(output_path, dataset, projWin=bounds, projWinSRS='EPSG:4326')
-
+        gdal.Translate(output_path, dataset, projWin=bounds, projWinSRS='EPSG:4326')
+    else:
+        gdal.Translate(output_path, dataset)
+        
     dataset = None
     
 

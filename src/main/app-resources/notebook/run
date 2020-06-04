@@ -147,10 +147,37 @@ def main():
     os.chdir(runtime) 
 
     # Loops over all the inputs
-    for reference in sys.stdin:
-      references.append(reference.rstrip())
+    #for reference in sys.stdin:
+    #  references.append(reference.rstrip())
+      
+      
+    # get reference by date
 
+    startdate = ciop.getparam('startdate')
+    enddate = ciop.getparam('enddate')
+    catalogue_url = ciop.getparam('catalogue_url')
     
+    
+    search_params =  dict([('start', startdate),
+                           ('stop', enddate),
+                           ('count', 'unlimited')])
+
+    search = ciop.search(end_point=catalogue_url,
+                         params=search_params,
+                         output_fields='self,identifier,startdate,enclosure',
+                         pagination = 100,
+                         model='EOP')
+    
+    for s in search:
+        #print(s['self'])
+        references.append(s['self'])
+        
+    ciop.log('INFO', '-----------------------------------------------------')
+    ciop.log('INFO', 'Number of products found {}'.format(len(references)))
+    ciop.log('INFO', 'The first one: {}'.format(references[0])) 
+    ciop.log('INFO', '-----------------------------------------------------')
+
+ 
     # execute the notebook
     nb_source = os.path.join('/application', 'notebook', 'libexec', 'input.ipynb')
     nb_target = os.path.join(runtime, 'result.ipynb')  

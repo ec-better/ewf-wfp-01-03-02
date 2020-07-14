@@ -166,6 +166,7 @@ def main():
                          params=search_params,
                          output_fields='self,identifier,startdate,enclosure',
                          pagination = 100,
+                         timeout=300000,
                          model='EOP')
     
     for s in search:

@@ -69,7 +69,7 @@ libedit=3.1.20191231=h46ee950_0
 libffi=3.2.1=he1b5a44_1007
 libgcc-ng=9.2.0=h24d8f2e_2
 libgdal=2.4.4=h2b6fda6_0
-libgfortran-ng=7.5.0=hdf63c60_6
+libgfortran-ng=7.5.0=hdf63c60_14
 libiconv=1.15=h516909a_1006
 libkml=1.3.0=hb574062_1011
 liblapack=3.8.0=16_openblas
